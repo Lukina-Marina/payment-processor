@@ -17,6 +17,7 @@
   },
   "homepage": "https://github.com/Lukina-Marina/payment-processor#readme",
   "dependencies": {
+    "@openzeppelin/contracts": "^4.9.5",
     "hardhat": "^2.19.4"
   }
 }
