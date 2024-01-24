@@ -8,12 +8,25 @@ contract ReceiveToken {
         uint256 subscriptionPeriod;
         address reciever;
         address token;
+        bool isPaused;
     }
     
     Subscription[] public subscriptions;
 
     function addSubscription(Subscription memory subscription) external {
         subscriptions.push(subscription);
+    }
+
+    function changeSubscription(uint256 subscriptionId, Subscription memory newSubscription) external {
+        subscriptions[subscriptionId] = newSubscription;
+    }
+
+    function pauseSubscription(uint256 subscriptionId) external {
+        subscriptions[subscriptionId].isPaused = true;
+    }
+
+    function unpauseSubscription(uint256 subscriptionId) external {
+        subscriptions[subscriptionId].isPaused = false;
     }
 
     function receiveTokens(address token, uint256 amount) external {
