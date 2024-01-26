@@ -23,6 +23,17 @@ contract SubscriptionManager {
     
     App[] public apps;
 
+    function addApp(string memory name, string memory description) external {
+        apps.push(
+            App({
+                owner: msg.sender,
+                subscriptions: new Subscription[](0),
+                name: name,
+                description: description
+            })
+        );
+    }
+
     function addSubscription(uint256 appId, Subscription memory subscription) external {
         require(apps[appId].owner == msg.sender, "SubscriptionManager: caller is not the owner");
 
