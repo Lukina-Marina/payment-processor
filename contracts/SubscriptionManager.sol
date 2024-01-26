@@ -5,7 +5,15 @@ pragma solidity 0.8.19;
 import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 
 contract SubscriptionManager {
+    struct App {
+        address owner;
+        Subscription[] subscriptions;
+        string name;
+        string description;
+    }
+
     struct Subscription {
+        string name;
         uint256 amount;
         uint256 subscriptionPeriod;
         address reciever;
@@ -13,27 +21,29 @@ contract SubscriptionManager {
         bool isPaused;
     }
     
-    Subscription[] public subscriptions;
+    App[] public apps;
 
-    function addSubscription(Subscription memory subscription) external {
-        subscriptions.push(subscription);
+    function addSubscription(uint256 appId, Subscription memory subscription) external {
+        require(apps[appId].owner == msg.sender, "SubscriptionManager: caller is not the owner");
+
+        apps[appId].subscriptions.push(subscription);
     }
 
-    function changeSubscription(uint256 subscriptionId, Subscription memory newSubscription) external {
-        subscriptions[subscriptionId] = newSubscription;
+    function changeSubscription(uint256 appId, uint256 subscriptionId, Subscription memory newSubscription) external {
+        require(apps[appId].owner == msg.sender, "SubscriptionManager: caller is not the owner");
+
+        apps[appId].subscriptions[subscriptionId] = newSubscription;
     }
 
-    function pauseSubscription(uint256 subscriptionId) external {
-        subscriptions[subscriptionId].isPaused = true;
+    function pauseSubscription(uint256 appId, uint256 subscriptionId) external {
+        require(apps[appId].owner == msg.sender, "SubscriptionManager: caller is not the owner");
+
+        apps[appId].subscriptions[subscriptionId].isPaused = true;
     }
 
-    function unpauseSubscription(uint256 subscriptionId) external {
-        subscriptions[subscriptionId].isPaused = false;
-    }
+    function unpauseSubscription(uint256 appId, uint256 subscriptionId) external {
+        require(apps[appId].owner == msg.sender, "SubscriptionManager: caller is not the owner");
 
-    function receiveTokens(address token, uint256 amount) external {
-        address from = msg.sender;
-        address to = address(this);
-        IERC20(token).transferFrom(from, to, amount);
+        apps[appId].subscriptions[subscriptionId].isPaused = false;
     }
 }
