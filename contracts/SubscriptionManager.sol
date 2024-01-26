@@ -4,7 +4,7 @@ pragma solidity 0.8.19;
 
 import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 
-contract ReceiveToken {
+contract SubscriptionManager {
     struct Subscription {
         uint256 amount;
         uint256 subscriptionPeriod;
