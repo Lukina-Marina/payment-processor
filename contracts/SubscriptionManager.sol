@@ -27,48 +27,64 @@ contract SubscriptionManager {
         bool isPaused;
     }
     
-    App[] public apps;
+    App[] private _apps;
 
     function addApp(string memory name, string memory description) external {
-        uint256 appIndex = apps.length;
-        apps.push();
+        uint256 appIndex = _apps.length;
+        _apps.push();
 
-        apps[appIndex].owner = msg.sender;
-        apps[appIndex].name = name;
-        apps[appIndex].description = description;
+        _apps[appIndex].owner = msg.sender;
+        _apps[appIndex].name = name;
+        _apps[appIndex].description = description;
 
         emit AppAdded(msg.sender, appIndex, name, description);
     }
 
     function addSubscription(uint256 appId, Subscription memory subscription) external {
-        require(apps[appId].owner == msg.sender, "SubscriptionManager: caller is not the owner");
+        require(_apps[appId].owner == msg.sender, "SubscriptionManager: caller is not the owner");
 
-        apps[appId].subscriptions.push(subscription);
+        _apps[appId].subscriptions.push(subscription);
 
-        emit SubscriptionAdded(msg.sender, appId, apps[appId].subscriptions.length - 1, subscription);
+        emit SubscriptionAdded(msg.sender, appId, _apps[appId].subscriptions.length - 1, subscription);
     }
 
     function changeSubscription(uint256 appId, uint256 subscriptionId, Subscription memory newSubscription) external {
-        require(apps[appId].owner == msg.sender, "SubscriptionManager: caller is not the owner");
+        require(_apps[appId].owner == msg.sender, "SubscriptionManager: caller is not the owner");
 
-        apps[appId].subscriptions[subscriptionId] = newSubscription;
+        _apps[appId].subscriptions[subscriptionId] = newSubscription;
 
         emit SubscriptionChanging(msg.sender, appId, subscriptionId, newSubscription);
     }
 
     function pauseSubscription(uint256 appId, uint256 subscriptionId) external {
-        require(apps[appId].owner == msg.sender, "SubscriptionManager: caller is not the owner");
+        require(_apps[appId].owner == msg.sender, "SubscriptionManager: caller is not the owner");
 
-        apps[appId].subscriptions[subscriptionId].isPaused = true;
+        _apps[appId].subscriptions[subscriptionId].isPaused = true;
 
         emit SubscriptionPaused(msg.sender, appId, subscriptionId);
     }
 
     function unpauseSubscription(uint256 appId, uint256 subscriptionId) external {
-        require(apps[appId].owner == msg.sender, "SubscriptionManager: caller is not the owner");
+        require(_apps[appId].owner == msg.sender, "SubscriptionManager: caller is not the owner");
 
-        apps[appId].subscriptions[subscriptionId].isPaused = false;
+        _apps[appId].subscriptions[subscriptionId].isPaused = false;
 
         emit SubscriptionUnpaused(msg.sender, appId, subscriptionId);
+    }
+
+    function appsLenght() external view returns(uint256) {
+        return _apps.length;
+    }
+
+    function apps(uint256 appId) external view returns(App memory) {
+        return _apps[appId];
+    }
+
+    function subscriptionLength(uint256 appId) external view returns(uint256) {
+        return _apps[appId].subscriptions.length;
+    }
+
+    function subscription(uint256 appId, uint256 subscriptionId) external view returns(Subscription memory) {
+        return _apps[appId].subscriptions[subscriptionId];
     }
 }
