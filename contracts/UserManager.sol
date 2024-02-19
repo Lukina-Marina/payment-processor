@@ -49,6 +49,8 @@ contract UserManager is IUserManager {
 
     
     function renewSubscription(address user, uint256 activeSubscriptionId) external {
+
+        require(!isActiveSubscription(user, activeSubscriptionId), "UserManager: Subscription is active");
         // _activeSubscriptions - mapping (address => ActiveSubscriptionInfo[])
         // _activeSubscriptions[user] - ActiveSubscriptionInfo[]
         // _activeSubscriptions[user][activeSubscriptionId] - ActiveSubscriptionInfo
@@ -56,16 +58,26 @@ contract UserManager is IUserManager {
         // чтобы вызвать контракт нужно сделать вот так
         // ISubscriptionManager(переменная, которая содержит адрес контракта).название функции(аргументы функции);
 
-
-        // 4. Нужно придумать какие проверки добавить, чтобы не снимать деньги с пользователя, до того как закончится подписка:
-        //require(IUserManager.ActiveSubscriptionInfo.isActive = false, "Subscription is active");
-
         ActiveSubscriptionInfo memory activeSubscriptionInfo = _activeSubscriptions[user][activeSubscriptionId];
 
         ISubscriptionManager.Subscription memory subscription = ISubscriptionManager(subscriptionManager).subscription(activeSubscriptionInfo.appId, activeSubscriptionInfo.subscriptionId);
 
+        require(subscription.isPaused == false, "UserManager: Subscription is paused");
+
         IERC20(subscription.token).transferFrom(msg.sender, subscription.reciever, subscription.amount);
 
-        _activeSubscriptions[user][activeSubscriptionId].subscriptionEndTime = block.timestamp;
+        _activeSubscriptions[user][activeSubscriptionId].subscriptionEndTime = block.timestamp + subscription.subscriptionPeriod;
+    }
+
+    function isActiveSubscription(address user, uint256 activeSubscriptionId) public view returns(bool) {
+        ActiveSubscriptionInfo memory activeSubscriptionInfo = _activeSubscriptions[user][activeSubscriptionId];
+
+        ISubscriptionManager.Subscription memory subscription = ISubscriptionManager(subscriptionManager).subscription(activeSubscriptionInfo.appId, activeSubscriptionInfo.subscriptionId);
+
+        if (subscription.isPaused) {
+            return false;
+        } else {
+            return activeSubscriptionInfo.subscriptionEndTime > block.timestamp;
+        }
     }
 }
