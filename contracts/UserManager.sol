@@ -48,7 +48,7 @@ contract UserManager is IUserManager {
     // адрес пользователя 2 - [активная подписка 0 пользователя 1, активная подписка 1 пользователя 1]
 
     
-    function renewSubscription(address user, uint256 activeSubscriptionId) external {
+    function renewSubscription(address user, uint256 activeSubscriptionId) public {
 
         require(!isActiveSubscription(user, activeSubscriptionId), "UserManager: Subscription is active");
         // _activeSubscriptions - mapping (address => ActiveSubscriptionInfo[])
@@ -83,9 +83,14 @@ contract UserManager is IUserManager {
         }
     }
 
-    function addSubscription(address user, uint256 appId) external {
-        
+    function addSubscription(uint256 appId, uint256 subscriptionId) external {
+        _activeSubscriptions[msg.sender].push(
+            ActiveSubscriptionInfo({
+                appId: appId,
+                subscriptionId: subscriptionId,
+                subscriptionEndTime: 0
+            })
+        );
+        renewSubscription(msg.sender, _activeSubscriptions[msg.sender].length);
     }
-
-    //2. Добавить функцию addSubscription(???). ПРИДУМАТЬ АРГУМЕНТЫ
 }
