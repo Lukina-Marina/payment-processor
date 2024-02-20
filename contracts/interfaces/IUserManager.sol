@@ -2,7 +2,11 @@
 
 pragma solidity 0.8.19;
 
+import {ISubscriptionManager} from "./ISubscriptionManager.sol";
+
 interface IUserManager {
+
+    event RenewSubscription(address indexed user, uint256 indexed activeSubscriptionIndex, ActiveSubscriptionInfo activeSubscriptionInfo, ISubscriptionManager.Subscription subscription);
 
     struct ActiveSubscriptionInfo {
         uint256 appId;

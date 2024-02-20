@@ -67,6 +67,8 @@ contract UserManager is IUserManager {
         IERC20(subscription.token).transferFrom(msg.sender, subscription.reciever, subscription.amount);
 
         _activeSubscriptions[user][activeSubscriptionId].subscriptionEndTime = block.timestamp + subscription.subscriptionPeriod;
+
+        emit RenewSubscription(msg.sender, activeSubscriptionId, activeSubscriptionInfo, subscription);
     }
 
     function isActiveSubscription(address user, uint256 activeSubscriptionId) public view returns(bool) {
@@ -80,4 +82,10 @@ contract UserManager is IUserManager {
             return activeSubscriptionInfo.subscriptionEndTime > block.timestamp;
         }
     }
+
+    function addSubscription(address user, uint256 appId) external {
+        
+    }
+
+    //2. Добавить функцию addSubscription(???). ПРИДУМАТЬ АРГУМЕНТЫ
 }
