@@ -11,7 +11,6 @@ interface IUserManager {
     struct ActiveSubscriptionInfo {
         uint256 appId;
         uint256 subscriptionId;
-        //bool isActive;
         uint256 subscriptionEndTime;
     }
 

@@ -84,6 +84,12 @@ contract UserManager is IUserManager {
     }
 
     function addSubscription(uint256 appId, uint256 subscriptionId) external {
+
+        for (uint i = 0; i < _activeSubscriptions[msg.sender].length; i++) {
+            ActiveSubscriptionInfo memory activeSubscriptionInfo = _activeSubscriptions[msg.sender][i];
+            require(activeSubscriptionInfo.appId != appId || activeSubscriptionInfo.subscriptionId != subscriptionId, "UserManager: You have already subscribed");
+        }
+
         _activeSubscriptions[msg.sender].push(
             ActiveSubscriptionInfo({
                 appId: appId,
@@ -93,4 +99,6 @@ contract UserManager is IUserManager {
         );
         renewSubscription(msg.sender, _activeSubscriptions[msg.sender].length);
     }
+
+    //function cancelSubscription()
 }
