@@ -89,6 +89,8 @@ contract UserManager is IUserManager {
             ActiveSubscriptionInfo memory activeSubscriptionInfo = _activeSubscriptions[msg.sender][i];
             require(activeSubscriptionInfo.appId != appId || activeSubscriptionInfo.subscriptionId != subscriptionId, "UserManager: You have already subscribed");
         }
+        require(appId < ISubscriptionManager(subscriptionManager).appsLenght(), "UserManager: Wrong appId");
+        require(subscriptionId < ISubscriptionManager(subscriptionManager).subscriptionLength(appId), "UserManager: Wrong subscriptionId");
 
         _activeSubscriptions[msg.sender].push(
             ActiveSubscriptionInfo({
