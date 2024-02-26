@@ -17,4 +17,10 @@ interface IUserManager {
     function subscriptionManager() external view returns(address);
     
     function renewSubscription(address user, uint256 activeSubscriptionId) external;
+
+    function isActiveSubscription(address user, uint256 activeSubscriptionId) external view returns(bool);
+
+    function addSubscription(uint256 appId, uint256 subscriptionId) external;
+
+    function cancelSubscription(uint256 activeSubscriptionId) external;
 }
