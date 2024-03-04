@@ -102,14 +102,11 @@ contract UserManager is IUserManager {
         renewSubscription(msg.sender, _activeSubscriptions[msg.sender].length);
     }
 
-    /* function cancelSubscription(uint256 appId, uint256 subscriptionId) external {
-        ActiveSubscriptionInfo memory activeSubscriptionInfo = _activeSubscriptions[msg.sender][i];
+    function cancelSubscription(uint256 activeSubscriptionId) external {
+        ActiveSubscriptionInfo memory activeSubscriptionInfo = _activeSubscriptions[msg.sender][activeSubscriptionId];
 
-        _activeSubscriptions[msg.sender].splice(
-            ActiveSubscriptionInfo({
-            appId: appId,
-            subscriptionId: subscriptionId,
-            subscriptionEndTime: 0
-        })
-    }*/
+        _activeSubscriptions[msg.sender][activeSubscriptionId] = _activeSubscriptions[msg.sender][_activeSubscriptions[msg.sender].length-1];
+
+        _activeSubscriptions[msg.sender].pop();
+    }
 }
