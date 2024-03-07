@@ -18,10 +18,10 @@ interface ISubscriptionManager {
 
     struct Subscription {
         string name;
-        uint256 amount;
+        uint256[] amounts;
         uint256 subscriptionPeriod;
         address reciever;
-        address token;
+        address[] tokens;
         bool isPaused;
     }
 

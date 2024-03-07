@@ -22,6 +22,8 @@ contract SubscriptionManager is ISubscriptionManager {
     function addSubscription(uint256 appId, Subscription memory newSubscription) external {
         require(_apps[appId].owner == msg.sender, "SubscriptionManager: caller is not the owner");
 
+        _checkSubscription(newSubscription);
+
         _apps[appId].subscriptions.push(newSubscription);
 
         emit SubscriptionAdded(msg.sender, appId, _apps[appId].subscriptions.length - 1, newSubscription);
@@ -29,6 +31,8 @@ contract SubscriptionManager is ISubscriptionManager {
 
     function changeSubscription(uint256 appId, uint256 subscriptionId, Subscription memory newSubscription) external {
         require(_apps[appId].owner == msg.sender, "SubscriptionManager: caller is not the owner");
+
+        _checkSubscription(newSubscription);
 
         _apps[appId].subscriptions[subscriptionId] = newSubscription;
 
@@ -65,5 +69,20 @@ contract SubscriptionManager is ISubscriptionManager {
 
     function subscription(uint256 appId, uint256 subscriptionId) external view returns(Subscription memory) {
         return _apps[appId].subscriptions[subscriptionId];
+    }
+
+    function _checkSubscription(Subscription memory _subscription) private view {
+        require(_subscription.amounts.length == _subscription.tokens.length, "SubscriptionManager: different length");
+        require(_subscription.reciever != address(0), "SubscriptionManager: reciever is zero");
+        require(_subscription.subscriptionPeriod != 0, "SubscriptionManager: subscriptionPeriod is zero");
+
+        for (uint i = 0; i < _subscription.tokens.length; i++) {
+            require(_subscription.tokens[i] != address(0), "SubscriptionManager: token is zero");
+            require(_subscription.amounts[i] != 0, "SubscriptionManager: amount is zero");
+
+            for (uint j = i+1; j < _subscription.tokens.length; j++) {
+                require(_subscription.tokens[j] != _subscription.tokens[i], "SubscriptionManager: equil tokens");
+            }
+        }
     }
 }
