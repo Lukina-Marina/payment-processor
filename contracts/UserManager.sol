@@ -5,6 +5,8 @@ pragma solidity 0.8.19;
 import {ISubscriptionManager} from "./interfaces/ISubscriptionManager.sol";
 import {IUserManager} from "./interfaces/IUserManager.sol";
 import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
+import {CheckTokenLib} from "./lib/CheckToken.sol";
+import {IAdminManager} from "./interfaces/IAdminManager.sol";
 
 contract UserManager is IUserManager {
 
@@ -18,8 +20,11 @@ contract UserManager is IUserManager {
 
     address public subscriptionManager;
 
-    constructor(address _subscriptionManager) {
+    address public adminManager;
+
+    constructor(address _subscriptionManager, address _adminManager) {
         subscriptionManager = _subscriptionManager;
+        adminManager = _adminManager;
     }
 
     // перменная типа struct ActiveSubscriptionInfo:
@@ -50,6 +55,8 @@ contract UserManager is IUserManager {
     
     function renewSubscription(address user, uint256 activeSubscriptionId) public {
 
+        uint256 gasLeftStart = gasleft();
+
         require(!isActiveSubscription(user, activeSubscriptionId), "UserManager: Subscription is active");
         // _activeSubscriptions - mapping (address => ActiveSubscriptionInfo[])
         // _activeSubscriptions[user] - ActiveSubscriptionInfo[]
@@ -64,7 +71,21 @@ contract UserManager is IUserManager {
 
         require(subscription.isPaused == false, "UserManager: Subscription is paused");
 
-        IERC20(subscription.token).transferFrom(msg.sender, subscription.reciever, subscription.amount);
+        uint256 tokenIndex = CheckTokenLib.findIndexOf(subscription.tokens, activeSubscriptionInfo.token);
+        require(tokenIndex < subscription.tokens.length, "UserManager: No such token");
+        
+        uint256 serviceFee = IAdminManager(adminManager).serviceFee();
+        address feeReceiver = IAdminManager(adminManager).feeReceiver();
+        uint256 extraGasAmount = IAdminManager(adminManager).extraGasAmount();
+
+        uint256 serviceFeeAmount = subscription.amounts[tokenIndex] * serviceFee / 10000;
+        uint256 gasLeftEnd = gasleft();
+        uint256 transactionFeeAmount = (gasLeftStart - gasLeftEnd + extraGasAmount) * tx.gasprice;
+        
+        uint256 transferAmount = subscription.amounts[tokenIndex] - serviceFeeAmount - transactionFeeAmount;
+
+        IERC20(activeSubscriptionInfo.token).transferFrom(msg.sender, subscription.reciever, transferAmount);
+        IERC20(activeSubscriptionInfo.token).transferFrom(msg.sender, feeReceiver, serviceFeeAmount + transactionFeeAmount);
 
         _activeSubscriptions[user][activeSubscriptionId].subscriptionEndTime = block.timestamp + subscription.subscriptionPeriod;
 
@@ -83,7 +104,7 @@ contract UserManager is IUserManager {
         }
     }
 
-    function addSubscription(uint256 appId, uint256 subscriptionId) external {
+    function addSubscription(uint256 appId, uint256 subscriptionId, address token) external {
 
         for (uint i = 0; i < _activeSubscriptions[msg.sender].length; i++) {
             ActiveSubscriptionInfo memory activeSubscriptionInfo = _activeSubscriptions[msg.sender][i];
@@ -92,11 +113,18 @@ contract UserManager is IUserManager {
         require(appId < ISubscriptionManager(subscriptionManager).appsLenght(), "UserManager: Wrong appId");
         require(subscriptionId < ISubscriptionManager(subscriptionManager).subscriptionLength(appId), "UserManager: Wrong subscriptionId");
 
+        ISubscriptionManager.Subscription memory _subscription = ISubscriptionManager(subscriptionManager).subscription(appId, subscriptionId);
+        
+        uint256 tokenIndex = CheckTokenLib.findIndexOf(_subscription.tokens, token);
+
+        require(tokenIndex < _subscription.tokens.length, "UserManager: No such token");
+
         _activeSubscriptions[msg.sender].push(
             ActiveSubscriptionInfo({
                 appId: appId,
                 subscriptionId: subscriptionId,
-                subscriptionEndTime: 0
+                subscriptionEndTime: 0,
+                token: token
             })
         );
         renewSubscription(msg.sender, _activeSubscriptions[msg.sender].length);
