@@ -71,7 +71,7 @@ contract SubscriptionManager is ISubscriptionManager {
         return _apps[appId].subscriptions[subscriptionId];
     }
 
-    function _checkSubscription(Subscription memory _subscription) private view {
+    function _checkSubscription(Subscription memory _subscription) private pure {
         require(_subscription.amounts.length == _subscription.tokens.length, "SubscriptionManager: different length");
         require(_subscription.reciever != address(0), "SubscriptionManager: reciever is zero");
         require(_subscription.subscriptionPeriod != 0, "SubscriptionManager: subscriptionPeriod is zero");
