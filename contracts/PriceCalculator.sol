@@ -13,6 +13,8 @@ contract PriceCalculator is IPriceCalculator {
 
     mapping(address => TokenConfig) private _tokenConfig;
 
+    uint256 private constant USD_DECIMALS = 18;
+
     function setTokenConfig(address token, address oracle, uint32 oracleHeartbeat) external override {
         if (oracle == address(0)) {
             require(oracleHeartbeat == 0, "PriceCalculator: Bad Oracle Heartbeat");
@@ -49,19 +51,32 @@ contract PriceCalculator is IPriceCalculator {
         return _tokenConfig[token];
     }
 
-    function _getTokenPriceFromUSDPrice(uint256 usdPrice, address token) private view returns (uint256) {
+    function _getUsdPriceFromToken(address token, uint256 tokenAmount) private view returns (uint256) {
         TokenConfig memory tokenConfigMem = _tokenConfig[token];
 
         require(tokenConfigMem.oracleAddress != address(0), "PriceCalculator: Not Supported Token");
 
         uint256 oracleAnswer = _getOracleAnswer(tokenConfigMem);
 
-        return
-            (usdPrice *
-                10 **
-                    (tokenConfigMem.tokenDecimals +
-                        tokenConfigMem.oracleDecimals)) /
-            (oracleAnswer * _USD_DENOMINATOR);
+        if (USD_DECIMALS < tokenConfigMem.tokenDecimals + tokenConfigMem.oracleDecimals) {
+            return (tokenAmount * oracleAnswer) / 10 ** (tokenConfigMem.tokenDecimals + tokenConfigMem.oracleDecimals - USD_DECIMALS);
+        } else {
+            return (tokenAmount * oracleAnswer) * 10 ** (USD_DECIMALS - tokenConfigMem.tokenDecimals - tokenConfigMem.oracleDecimals);
+        }
+    }
+
+    function _getTokenPriceFromUsd(address token, uint256 usdAmount) private view returns (uint256) {
+        TokenConfig memory tokenConfigMem = _tokenConfig[token];
+
+        require(tokenConfigMem.oracleAddress != address(0), "PriceCalculator: Not Supported Token");
+
+        uint256 oracleAnswer = _getOracleAnswer(tokenConfigMem);
+
+        if (USD_DECIMALS > tokenConfigMem.tokenDecimals + tokenConfigMem.oracleDecimals) {
+            return usdAmount * 10 ** (USD_DECIMALS - tokenConfigMem.oracleDecimals - tokenConfigMem.tokenDecimals) / oracleAnswer;
+        } else {
+            return usdAmount * 10 ** (tokenConfigMem.oracleDecimals + tokenConfigMem.tokenDecimals - USD_DECIMALS) / oracleAnswer;
+        }
     }
 
     function _getOracleAnswer(TokenConfig memory tokenConfigMem) private view returns (uint256) {
