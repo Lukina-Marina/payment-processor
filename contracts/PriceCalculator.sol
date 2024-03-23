@@ -51,6 +51,11 @@ contract PriceCalculator is IPriceCalculator {
         return _tokenConfig[token];
     }
 
+    function getTokenFromETH(address token, uint256 ethAmount) external view returns (uint256) {
+        uint256 usdAmount = _getUsdPriceFromToken(NATIVE_TOKEN_ADDRESS, ethAmount);
+        return _getTokenPriceFromUsd(token, usdAmount);
+    }
+
     function _getUsdPriceFromToken(address token, uint256 tokenAmount) private view returns (uint256) {
         TokenConfig memory tokenConfigMem = _tokenConfig[token];
 
