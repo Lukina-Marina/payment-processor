@@ -18,6 +18,8 @@ interface IPriceCalculator {
         address token
     ) external view returns (TokenConfig memory);
 
+    function getTokenFromETH(address token, uint256 ethAmount) external view returns (uint256);
+
     function setTokenConfig(
         address token,
         address oracle,

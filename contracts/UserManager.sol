@@ -7,6 +7,7 @@ import {IUserManager} from "./interfaces/IUserManager.sol";
 import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import {CheckTokenLib} from "./lib/CheckToken.sol";
 import {IAdminManager} from "./interfaces/IAdminManager.sol";
+import {IPriceCalculator} from "./interfaces/IPriceCalculator.sol";
 
 contract UserManager is IUserManager {
 
@@ -22,9 +23,12 @@ contract UserManager is IUserManager {
 
     address public adminManager;
 
-    constructor(address _subscriptionManager, address _adminManager) {
+    address public priceCalculator;
+
+    constructor(address _subscriptionManager, address _adminManager, address _priceCalculator) {
         subscriptionManager = _subscriptionManager;
         adminManager = _adminManager;
+        priceCalculator = _priceCalculator;
     }
 
     // перменная типа struct ActiveSubscriptionInfo:
@@ -74,18 +78,29 @@ contract UserManager is IUserManager {
         uint256 tokenIndex = CheckTokenLib.findIndexOf(subscription.tokens, activeSubscriptionInfo.token);
         require(tokenIndex < subscription.tokens.length, "UserManager: No such token");
         
-        uint256 serviceFee = IAdminManager(adminManager).serviceFee();
+        uint256 serviceFeeAmount;
+        {
+            uint256 serviceFee = IAdminManager(adminManager).serviceFee();
+            serviceFeeAmount = subscription.amounts[tokenIndex] * serviceFee / 10000;
+        }
+        
         address feeReceiver = IAdminManager(adminManager).feeReceiver();
         uint256 extraGasAmount = IAdminManager(adminManager).extraGasAmount();
 
-        uint256 serviceFeeAmount = subscription.amounts[tokenIndex] * serviceFee / 10000;
-        uint256 gasLeftEnd = gasleft();
-        uint256 transactionFeeAmount = (gasLeftStart - gasLeftEnd + extraGasAmount) * tx.gasprice;
+        uint256 transactionFeeAmountToken;
+        {
+            uint256 gasLeftEnd = gasleft();
+            uint256 transactionFeeAmount = (gasLeftStart - gasLeftEnd + extraGasAmount) * tx.gasprice;
+            transactionFeeAmountToken = IPriceCalculator(priceCalculator).getTokenFromETH(activeSubscriptionInfo.token, transactionFeeAmount);
+        }
         
-        uint256 transferAmount = subscription.amounts[tokenIndex] - serviceFeeAmount - transactionFeeAmount;
+        uint256 totalFee = serviceFeeAmount + transactionFeeAmountToken;
+
+        require(subscription.amounts[tokenIndex] > totalFee, "UserManager: Too big fee");
+        uint256 transferAmount = subscription.amounts[tokenIndex] - totalFee;
 
         IERC20(activeSubscriptionInfo.token).transferFrom(msg.sender, subscription.reciever, transferAmount);
-        IERC20(activeSubscriptionInfo.token).transferFrom(msg.sender, feeReceiver, serviceFeeAmount + transactionFeeAmount);
+        IERC20(activeSubscriptionInfo.token).transferFrom(msg.sender, feeReceiver, totalFee);
 
         _activeSubscriptions[user][activeSubscriptionId].subscriptionEndTime = block.timestamp + subscription.subscriptionPeriod;
 
