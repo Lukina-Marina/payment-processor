@@ -75,8 +75,7 @@ contract UserManager is IUserManager {
 
         require(subscription.isPaused == false, "UserManager: Subscription is paused");
 
-        uint256 tokenIndex = CheckTokenLib.findIndexOf(subscription.tokens, activeSubscriptionInfo.token);
-        require(tokenIndex < subscription.tokens.length, "UserManager: No such token");
+        uint256 tokenIndex = _checkToken(subscription.tokens, activeSubscriptionInfo.token);
         
         uint256 serviceFeeAmount;
         {
@@ -106,7 +105,7 @@ contract UserManager is IUserManager {
 
         _activeSubscriptions[user][activeSubscriptionId].subscriptionEndTime = block.timestamp + subscription.subscriptionPeriod;
 
-        emit RenewSubscription(msg.sender, activeSubscriptionId, activeSubscriptionInfo, subscription);
+        emit RenewedSubscription(msg.sender, activeSubscriptionId, activeSubscriptionInfo, subscription);
     }
 
     function isActiveSubscription(address user, uint256 activeSubscriptionId) public view returns(bool) {
@@ -132,9 +131,7 @@ contract UserManager is IUserManager {
 
         ISubscriptionManager.Subscription memory _subscription = ISubscriptionManager(subscriptionManager).subscription(appId, subscriptionId);
         
-        uint256 tokenIndex = CheckTokenLib.findIndexOf(_subscription.tokens, token);
-
-        require(tokenIndex < _subscription.tokens.length, "UserManager: No such token");
+        _checkToken(_subscription.tokens, token);
 
         _activeSubscriptions[msg.sender].push(
             ActiveSubscriptionInfo({
@@ -146,7 +143,7 @@ contract UserManager is IUserManager {
         );
         renewSubscription(msg.sender, _activeSubscriptions[msg.sender].length);
 
-        emit AddSubscription(msg.sender, appId, subscriptionId, token);
+        emit AddedSubscription(msg.sender, appId, subscriptionId, token);
     }
 
     function cancelSubscription(uint256 activeSubscriptionId) external {
@@ -156,8 +153,30 @@ contract UserManager is IUserManager {
 
         _activeSubscriptions[msg.sender].pop();
 
-        emit CancelSubscription(msg.sender, activeSubscriptionId, activeSubscriptionInfo);
+        emit CanceledSubscription(msg.sender, activeSubscriptionId, activeSubscriptionInfo);
     }
 
-    //function changePaymentToken() {}
+    function changePaymentToken(uint256 activeSubscriptionId, address newPaymentToken) external {
+
+        uint256 appId = _activeSubscriptions[msg.sender][activeSubscriptionId].appId;
+        uint256 subscriptionId = _activeSubscriptions[msg.sender][activeSubscriptionId].subscriptionId;
+
+        ISubscriptionManager.Subscription memory subscription = ISubscriptionManager(subscriptionManager).subscription(appId, subscriptionId);
+
+        _checkToken(subscription.tokens, newPaymentToken);
+
+        address oldToken = _activeSubscriptions[msg.sender][activeSubscriptionId].token;
+
+        _activeSubscriptions[msg.sender][activeSubscriptionId].token = newPaymentToken;
+
+        emit PaymentTokenChanged(msg.sender, oldToken, newPaymentToken, activeSubscriptionId);
+    }
+
+    function _checkToken(address[] memory tokens, address token) private pure returns(uint256) {
+        uint256 tokenIndex = CheckTokenLib.findIndexOf(tokens, token);
+
+        require(tokenIndex < tokens.length, "UserManager: No such token");
+
+        return tokenIndex;
+    }
 }
