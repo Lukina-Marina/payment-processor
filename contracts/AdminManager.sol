@@ -4,8 +4,9 @@ pragma solidity 0.8.19;
 
 import {IAdminManager} from "./interfaces/IAdminManager.sol";
 import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
+import {Pausable} from "@openzeppelin/contracts/security/Pausable.sol";
 
-contract AdminManager is IAdminManager, Ownable {
+contract AdminManager is IAdminManager, Ownable, Pausable {
     //percentDenominator = 100_00 = 100%
     //amount * 1_00 / percentDenominator = 1% от amount
     //amount * 15_20 / percentDenominator = 15.2% от amount
@@ -53,5 +54,13 @@ contract AdminManager is IAdminManager, Ownable {
         extraGasAmount = newExtraGasAmount;
 
         emit ExtraGasAmountChanged(oldValue, newExtraGasAmount);
+    }
+
+    function pause() external onlyOwner {
+        _pause();
+    }
+
+    function unpause() external onlyOwner {
+        _unpause();
     }
 }

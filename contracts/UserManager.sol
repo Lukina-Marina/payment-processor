@@ -61,6 +61,8 @@ contract UserManager is IUserManager {
 
         uint256 gasLeftStart = gasleft();
 
+        require(!IAdminManager(adminManager).paused(), "UserManager: Paused");
+
         require(!isActiveSubscription(user, activeSubscriptionId), "UserManager: Subscription is active");
         // _activeSubscriptions - mapping (address => ActiveSubscriptionInfo[])
         // _activeSubscriptions[user] - ActiveSubscriptionInfo[]

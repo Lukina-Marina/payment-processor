@@ -13,4 +13,7 @@ interface IAdminManager {
     function setServiceFee(uint256 newServiceFee) external;
     function setFeeReceiver(address newFeeReceiver) external;
     function setExtraGasAmount(uint256 newExtraGasAmount) external;
+    function paused() external view returns (bool);
+    function pause() external;
+    function unpause() external;
 }
