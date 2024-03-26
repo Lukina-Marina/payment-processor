@@ -30,4 +30,8 @@ interface IUserManager {
     function addSubscription(uint256 appId, uint256 subscriptionId, address token) external;
 
     function cancelSubscription(uint256 activeSubscriptionId) external;
+
+    function changePaymentToken(uint256 activeSubscriptionId, address newPaymentToken) external;
+
+    function changeSubscriptionInApp(uint256 activeSubscriptionId, uint256 newSubscriptionId) external;
 }

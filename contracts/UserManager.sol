@@ -120,7 +120,7 @@ contract UserManager is IUserManager {
         }
     }
 
-    function addSubscription(uint256 appId, uint256 subscriptionId, address token) external {
+    function addSubscription(uint256 appId, uint256 subscriptionId, address token) public {
 
         for (uint i = 0; i < _activeSubscriptions[msg.sender].length; i++) {
             ActiveSubscriptionInfo memory activeSubscriptionInfo = _activeSubscriptions[msg.sender][i];
@@ -146,7 +146,7 @@ contract UserManager is IUserManager {
         emit AddedSubscription(msg.sender, appId, subscriptionId, token);
     }
 
-    function cancelSubscription(uint256 activeSubscriptionId) external {
+    function cancelSubscription(uint256 activeSubscriptionId) public {
         ActiveSubscriptionInfo memory activeSubscriptionInfo = _activeSubscriptions[msg.sender][activeSubscriptionId];
 
         _activeSubscriptions[msg.sender][activeSubscriptionId] = _activeSubscriptions[msg.sender][_activeSubscriptions[msg.sender].length-1];
@@ -170,6 +170,14 @@ contract UserManager is IUserManager {
         _activeSubscriptions[msg.sender][activeSubscriptionId].token = newPaymentToken;
 
         emit PaymentTokenChanged(msg.sender, oldToken, newPaymentToken, activeSubscriptionId);
+    }
+
+    function changeSubscriptionInApp(uint256 activeSubscriptionId, uint256 newSubscriptionId) external {
+        ActiveSubscriptionInfo memory activeSubscriptionInfo = _activeSubscriptions[msg.sender][activeSubscriptionId];
+
+        cancelSubscription(activeSubscriptionId);
+
+        addSubscription(activeSubscriptionInfo.appId, newSubscriptionId, activeSubscriptionInfo.token);
     }
 
     function _checkToken(address[] memory tokens, address token) private pure returns(uint256) {
