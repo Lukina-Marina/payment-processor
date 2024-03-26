@@ -92,6 +92,8 @@ contract UserManager is IUserManager {
             uint256 gasLeftEnd = gasleft();
             uint256 transactionFeeAmount = (gasLeftStart - gasLeftEnd + extraGasAmount) * tx.gasprice;
             transactionFeeAmountToken = IPriceCalculator(priceCalculator).getTokenFromETH(activeSubscriptionInfo.token, transactionFeeAmount);
+
+            emit FeeCharged(activeSubscriptionInfo.token, serviceFeeAmount, transactionFeeAmount, transactionFeeAmountToken);
         }
         
         uint256 totalFee = serviceFeeAmount + transactionFeeAmountToken;
@@ -143,6 +145,8 @@ contract UserManager is IUserManager {
             })
         );
         renewSubscription(msg.sender, _activeSubscriptions[msg.sender].length);
+
+        emit AddSubscription(msg.sender, appId, subscriptionId, token);
     }
 
     function cancelSubscription(uint256 activeSubscriptionId) external {
@@ -151,5 +155,9 @@ contract UserManager is IUserManager {
         _activeSubscriptions[msg.sender][activeSubscriptionId] = _activeSubscriptions[msg.sender][_activeSubscriptions[msg.sender].length-1];
 
         _activeSubscriptions[msg.sender].pop();
+
+        emit CancelSubscription(msg.sender, activeSubscriptionId, activeSubscriptionInfo);
     }
+
+    //function changePaymentToken() {}
 }
