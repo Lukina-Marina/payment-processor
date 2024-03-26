@@ -56,6 +56,10 @@ contract AdminManager is IAdminManager, Ownable, Pausable {
         emit ExtraGasAmountChanged(oldValue, newExtraGasAmount);
     }
 
+    function paused() public view virtual override(IAdminManager, Pausable) returns (bool) {
+        return super.paused();
+    }
+
     function pause() external onlyOwner {
         _pause();
     }
