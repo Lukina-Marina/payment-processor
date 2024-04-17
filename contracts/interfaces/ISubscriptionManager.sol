@@ -25,21 +25,22 @@ interface ISubscriptionManager {
         bool isPaused;
     }
 
+    // Создание приложения
     function addApp(string memory name, string memory description) external;
-
+    // Добавление подписки
     function addSubscription(uint256 appId, Subscription memory subscription) external;
-
+    // Изменение подписки
     function changeSubscription(uint256 appId, uint256 subscriptionId, Subscription memory newSubscription) external;
-
+    // Остановка подписки на паузу
     function pauseSubscription(uint256 appId, uint256 subscriptionId) external;
-
+    // Снатия подписки с паузы
     function unpauseSubscription(uint256 appId, uint256 subscriptionId) external;
-
+    // Количество добавленных приложений в протоколе
     function appsLenght() external view returns(uint256);
-
+    // Информация о приложении
     function apps(uint256 appId) external view returns(App memory);
-
+    // Количество подписок в приложении
     function subscriptionLength(uint256 appId) external view returns(uint256);
-
+    // Информация о подписке
     function subscription(uint256 appId, uint256 subscriptionId) external view returns(Subscription memory);
 }

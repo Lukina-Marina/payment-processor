@@ -18,20 +18,21 @@ interface IUserManager {
         uint256 subscriptionEndTime;
         address token;
     }
-
+    
+    // Адрес смарт-контракта subscriptionManager
     function subscriptionManager() external view returns(address);
-    
+    // Адрес смарт-контракта adminManager
     function adminManager() external view returns(address);
-    
+    // Продление подписки
     function renewSubscription(address user, uint256 activeSubscriptionId) external;
-
+    // Активна ли подписка
     function isActiveSubscription(address user, uint256 activeSubscriptionId) external view returns(bool);
-
+    // Добавление подписки
     function addSubscription(uint256 appId, uint256 subscriptionId, address token) external;
-
+    // Отмена подписки
     function cancelSubscription(uint256 activeSubscriptionId) external;
-
+    // Изменение токена оплаты
     function changePaymentToken(uint256 activeSubscriptionId, address newPaymentToken) external;
-
+    // Смена одной подписки на другую внутри одного приложения
     function changeSubscriptionInApp(uint256 activeSubscriptionId, uint256 newSubscriptionId) external;
 }
