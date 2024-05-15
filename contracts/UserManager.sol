@@ -105,7 +105,9 @@ contract UserManager is IUserManager {
         IERC20(activeSubscriptionInfo.token).transferFrom(msg.sender, subscription.reciever, transferAmount);
         IERC20(activeSubscriptionInfo.token).transferFrom(msg.sender, feeReceiver, totalFee);
 
-        _activeSubscriptions[user][activeSubscriptionId].subscriptionEndTime = block.timestamp + subscription.subscriptionPeriod;
+        uint256 newSubscriptionEndTime = block.timestamp + subscription.subscriptionPeriod;
+        _activeSubscriptions[user][activeSubscriptionId].subscriptionEndTime = newSubscriptionEndTime;
+        activeSubscriptionInfo.subscriptionEndTime = newSubscriptionEndTime;
 
         emit RenewedSubscription(msg.sender, activeSubscriptionId, activeSubscriptionInfo, subscription);
     }
@@ -143,19 +145,22 @@ contract UserManager is IUserManager {
                 token: token
             })
         );
-        renewSubscription(msg.sender, _activeSubscriptions[msg.sender].length);
+        uint256 activeSubscriptionId = _activeSubscriptions[msg.sender].length - 1;
 
-        emit AddedSubscription(msg.sender, appId, subscriptionId, token);
+        emit AddedSubscription(msg.sender, appId, subscriptionId, activeSubscriptionId, token);
+
+        renewSubscription(msg.sender, activeSubscriptionId);
     }
 
     function cancelSubscription(uint256 activeSubscriptionId) public {
         ActiveSubscriptionInfo memory activeSubscriptionInfo = _activeSubscriptions[msg.sender][activeSubscriptionId];
 
-        _activeSubscriptions[msg.sender][activeSubscriptionId] = _activeSubscriptions[msg.sender][_activeSubscriptions[msg.sender].length-1];
+        uint256 lastElementId = _activeSubscriptions[msg.sender].length-1;
+        _activeSubscriptions[msg.sender][activeSubscriptionId] = _activeSubscriptions[msg.sender][lastElementId];
 
         _activeSubscriptions[msg.sender].pop();
 
-        emit CanceledSubscription(msg.sender, activeSubscriptionId, activeSubscriptionInfo);
+        emit CanceledSubscription(msg.sender, activeSubscriptionId, lastElementId, activeSubscriptionInfo);
     }
 
     function changePaymentToken(uint256 activeSubscriptionId, address newPaymentToken) external {

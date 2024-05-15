@@ -8,8 +8,8 @@ interface IUserManager {
 
     event RenewedSubscription(address indexed user, uint256 indexed activeSubscriptionIndex, ActiveSubscriptionInfo activeSubscriptionInfo, ISubscriptionManager.Subscription subscription);
     event FeeCharged(address indexed token, uint256 serviceFeeAmount, uint256 transactionFeeAmount, uint256 transactionFeeAmountToken);
-    event AddedSubscription(address indexed user, uint256 indexed appId, uint256 indexed subscriptionId, address token);
-    event CanceledSubscription(address indexed user, uint256 activeSubscriptionId, ActiveSubscriptionInfo activeSubscriptionInfo);
+    event AddedSubscription(address indexed user, uint256 indexed appId, uint256 indexed subscriptionId, uint256 activeSubscriptionId, address token);
+    event CanceledSubscription(address indexed user, uint256 activeSubscriptionId, uint256 lastElementId, ActiveSubscriptionInfo activeSubscriptionInfo);
     event PaymentTokenChanged(address indexed user, address indexed oldToken, address indexed newToken, uint256 activeSubscriptionId);
 
     struct ActiveSubscriptionInfo {
