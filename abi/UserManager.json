@@ -1,0 +1,413 @@
+[
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "_subscriptionManager",
+        "type": "address"
+      },
+      {
+        "internalType": "address",
+        "name": "_adminManager",
+        "type": "address"
+      },
+      {
+        "internalType": "address",
+        "name": "_priceCalculator",
+        "type": "address"
+      }
+    ],
+    "stateMutability": "nonpayable",
+    "type": "constructor"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": true,
+        "internalType": "address",
+        "name": "user",
+        "type": "address"
+      },
+      {
+        "indexed": true,
+        "internalType": "uint256",
+        "name": "appId",
+        "type": "uint256"
+      },
+      {
+        "indexed": true,
+        "internalType": "uint256",
+        "name": "subscriptionId",
+        "type": "uint256"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "activeSubscriptionId",
+        "type": "uint256"
+      },
+      {
+        "indexed": false,
+        "internalType": "address",
+        "name": "token",
+        "type": "address"
+      }
+    ],
+    "name": "AddedSubscription",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": true,
+        "internalType": "address",
+        "name": "user",
+        "type": "address"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "activeSubscriptionId",
+        "type": "uint256"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "lastElementId",
+        "type": "uint256"
+      },
+      {
+        "components": [
+          {
+            "internalType": "uint256",
+            "name": "appId",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "subscriptionId",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "subscriptionEndTime",
+            "type": "uint256"
+          },
+          {
+            "internalType": "address",
+            "name": "token",
+            "type": "address"
+          }
+        ],
+        "indexed": false,
+        "internalType": "struct IUserManager.ActiveSubscriptionInfo",
+        "name": "activeSubscriptionInfo",
+        "type": "tuple"
+      }
+    ],
+    "name": "CanceledSubscription",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": true,
+        "internalType": "address",
+        "name": "token",
+        "type": "address"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "serviceFeeAmount",
+        "type": "uint256"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "transactionFeeAmount",
+        "type": "uint256"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "transactionFeeAmountToken",
+        "type": "uint256"
+      }
+    ],
+    "name": "FeeCharged",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": true,
+        "internalType": "address",
+        "name": "user",
+        "type": "address"
+      },
+      {
+        "indexed": true,
+        "internalType": "address",
+        "name": "oldToken",
+        "type": "address"
+      },
+      {
+        "indexed": true,
+        "internalType": "address",
+        "name": "newToken",
+        "type": "address"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "activeSubscriptionId",
+        "type": "uint256"
+      }
+    ],
+    "name": "PaymentTokenChanged",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": true,
+        "internalType": "address",
+        "name": "user",
+        "type": "address"
+      },
+      {
+        "indexed": true,
+        "internalType": "uint256",
+        "name": "activeSubscriptionIndex",
+        "type": "uint256"
+      },
+      {
+        "components": [
+          {
+            "internalType": "uint256",
+            "name": "appId",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "subscriptionId",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "subscriptionEndTime",
+            "type": "uint256"
+          },
+          {
+            "internalType": "address",
+            "name": "token",
+            "type": "address"
+          }
+        ],
+        "indexed": false,
+        "internalType": "struct IUserManager.ActiveSubscriptionInfo",
+        "name": "activeSubscriptionInfo",
+        "type": "tuple"
+      },
+      {
+        "components": [
+          {
+            "internalType": "string",
+            "name": "name",
+            "type": "string"
+          },
+          {
+            "internalType": "uint256[]",
+            "name": "amounts",
+            "type": "uint256[]"
+          },
+          {
+            "internalType": "uint256",
+            "name": "subscriptionPeriod",
+            "type": "uint256"
+          },
+          {
+            "internalType": "address",
+            "name": "reciever",
+            "type": "address"
+          },
+          {
+            "internalType": "address[]",
+            "name": "tokens",
+            "type": "address[]"
+          },
+          {
+            "internalType": "bool",
+            "name": "isPaused",
+            "type": "bool"
+          }
+        ],
+        "indexed": false,
+        "internalType": "struct ISubscriptionManager.Subscription",
+        "name": "subscription",
+        "type": "tuple"
+      }
+    ],
+    "name": "RenewedSubscription",
+    "type": "event"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "appId",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "subscriptionId",
+        "type": "uint256"
+      },
+      {
+        "internalType": "address",
+        "name": "token",
+        "type": "address"
+      }
+    ],
+    "name": "addSubscription",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "adminManager",
+    "outputs": [
+      {
+        "internalType": "address",
+        "name": "",
+        "type": "address"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "activeSubscriptionId",
+        "type": "uint256"
+      }
+    ],
+    "name": "cancelSubscription",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "activeSubscriptionId",
+        "type": "uint256"
+      },
+      {
+        "internalType": "address",
+        "name": "newPaymentToken",
+        "type": "address"
+      }
+    ],
+    "name": "changePaymentToken",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "activeSubscriptionId",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "newSubscriptionId",
+        "type": "uint256"
+      }
+    ],
+    "name": "changeSubscriptionInApp",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "user",
+        "type": "address"
+      },
+      {
+        "internalType": "uint256",
+        "name": "activeSubscriptionId",
+        "type": "uint256"
+      }
+    ],
+    "name": "isActiveSubscription",
+    "outputs": [
+      {
+        "internalType": "bool",
+        "name": "",
+        "type": "bool"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "priceCalculator",
+    "outputs": [
+      {
+        "internalType": "address",
+        "name": "",
+        "type": "address"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "user",
+        "type": "address"
+      },
+      {
+        "internalType": "uint256",
+        "name": "activeSubscriptionId",
+        "type": "uint256"
+      }
+    ],
+    "name": "renewSubscription",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "subscriptionManager",
+    "outputs": [
+      {
+        "internalType": "address",
+        "name": "",
+        "type": "address"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  }
+]

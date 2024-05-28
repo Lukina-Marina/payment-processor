@@ -1,0 +1,144 @@
+[
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": true,
+        "internalType": "address",
+        "name": "token",
+        "type": "address"
+      }
+    ],
+    "name": "TokenConfigDeleted",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": true,
+        "internalType": "address",
+        "name": "token",
+        "type": "address"
+      },
+      {
+        "components": [
+          {
+            "internalType": "uint8",
+            "name": "tokenDecimals",
+            "type": "uint8"
+          },
+          {
+            "internalType": "uint8",
+            "name": "oracleDecimals",
+            "type": "uint8"
+          },
+          {
+            "internalType": "uint32",
+            "name": "oracleHeartbeat",
+            "type": "uint32"
+          },
+          {
+            "internalType": "address",
+            "name": "oracleAddress",
+            "type": "address"
+          }
+        ],
+        "indexed": false,
+        "internalType": "struct IPriceCalculator.TokenConfig",
+        "name": "tokenConfig",
+        "type": "tuple"
+      }
+    ],
+    "name": "TokenConfigSet",
+    "type": "event"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "token",
+        "type": "address"
+      },
+      {
+        "internalType": "uint256",
+        "name": "ethAmount",
+        "type": "uint256"
+      }
+    ],
+    "name": "getTokenFromETH",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "token",
+        "type": "address"
+      },
+      {
+        "internalType": "address",
+        "name": "oracle",
+        "type": "address"
+      },
+      {
+        "internalType": "uint32",
+        "name": "oracleHeartbeat",
+        "type": "uint32"
+      }
+    ],
+    "name": "setTokenConfig",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "token",
+        "type": "address"
+      }
+    ],
+    "name": "tokenConfig",
+    "outputs": [
+      {
+        "components": [
+          {
+            "internalType": "uint8",
+            "name": "tokenDecimals",
+            "type": "uint8"
+          },
+          {
+            "internalType": "uint8",
+            "name": "oracleDecimals",
+            "type": "uint8"
+          },
+          {
+            "internalType": "uint32",
+            "name": "oracleHeartbeat",
+            "type": "uint32"
+          },
+          {
+            "internalType": "address",
+            "name": "oracleAddress",
+            "type": "address"
+          }
+        ],
+        "internalType": "struct IPriceCalculator.TokenConfig",
+        "name": "",
+        "type": "tuple"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  }
+]
