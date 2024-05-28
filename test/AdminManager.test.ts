@@ -17,6 +17,41 @@ describe("Unit tests for the AdminManager contract", () => {
             env.extraGasAmount
         );
     });
+
+    describe("setServiceFee function", () => {
+        it("Main functionality", async () => {
+            const env = await loadFixture(prepareEnv);
+
+            const newServiceFee = env.serviceFee + 1_00;
+            await expect(
+                env.adminManagerContract.setServiceFee(newServiceFee)
+            ).emit(
+                env.adminManagerContract, "ServiceFeeChanged"
+            ).withArgs(env.serviceFee, newServiceFee);
+
+            expect(await env.adminManagerContract.serviceFee()).equals(
+                newServiceFee
+            );
+        })
+
+        describe("Reverts", () => {
+            it("Only owner test", async () => {
+                const env = await loadFixture(prepareEnv);
+
+                await expect(
+                    env.adminManagerContract.connect(env.bob).setServiceFee(0)
+                ).revertedWith("Ownable: caller is not the owner");
+            })
+
+            it("Bad newServiceFee", async () => {
+                const env = await loadFixture(prepareEnv);
+                    
+                await expect(
+                    env.adminManagerContract.setServiceFee(env.PERCENT_DENOMINATOR)
+                ).revertedWith("AdminManager: Too big service fee");
+            })
+        })
+    })
 });
 
 async function prepareEnv() {
@@ -42,7 +77,7 @@ async function prepareEnv() {
         serviceFee,
         extraGasAmount,
         PERCENT_DENOMINATOR,
-        
+
         adminManagerContract
     };
 }
