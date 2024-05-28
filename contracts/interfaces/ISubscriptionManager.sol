@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: MIT
 
-pragma solidity 0.8.19;
+pragma solidity 0.8.24;
 
 interface ISubscriptionManager {
     event AppAdded(address indexed owner, uint256 indexed appIndex, string name, string description);

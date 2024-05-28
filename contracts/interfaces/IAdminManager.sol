@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: MIT
 
-pragma solidity 0.8.19;
+pragma solidity 0.8.24;
 
 interface IAdminManager {
     event ServiceFeeChanged(uint256 oldValue, uint256 newValue);
