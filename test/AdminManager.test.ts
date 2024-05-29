@@ -52,6 +52,78 @@ describe("Unit tests for the AdminManager contract", () => {
             })
         })
     })
+
+
+    describe("setFeeReceiver function", () => {
+        it("Main functionality", async () => {
+            const env = await loadFixture(prepareEnv);
+
+            const newFeeReceiver = env.alice;
+            await expect(
+                env.adminManagerContract.setFeeReceiver(newFeeReceiver)
+            ).emit(
+                env.adminManagerContract, "FeeReceiverChanged"
+            ).withArgs(env.feeReceiver, newFeeReceiver);
+
+            expect(await env.adminManagerContract.feeReceiver()).equals(
+                newFeeReceiver
+            );
+        })
+
+        describe("Reverts", () => {
+            it("Only owner test", async () => {
+                const env = await loadFixture(prepareEnv);
+
+                await expect(
+                    env.adminManagerContract.connect(env.bob).setFeeReceiver(ethers.ZeroAddress)
+                ).revertedWith("Ownable: caller is not the owner");
+            })
+
+            it("Zero fee receiver", async () => {
+                const env = await loadFixture(prepareEnv);
+                    
+                await expect(
+                    env.adminManagerContract.setFeeReceiver(ethers.ZeroAddress)
+                ).revertedWith("AdminManager: Zero fee receiver");
+            })
+        })
+    })
+
+
+    describe("setExtraGasAmount function", () => {
+        it("Main functionality", async () => {
+            const env = await loadFixture(prepareEnv);
+
+            const newExtraGasAmount = env.extraGasAmount + 100;
+            await expect(
+                env.adminManagerContract.setExtraGasAmount(newExtraGasAmount)
+            ).emit(
+                env.adminManagerContract, "ExtraGasAmountChanged"
+            ).withArgs(env.extraGasAmount, newExtraGasAmount);
+
+            expect(await env.adminManagerContract.extraGasAmount()).equals(
+                newExtraGasAmount
+            );
+        })
+
+        describe("Reverts", () => {
+            it("Only owner test", async () => {
+                const env = await loadFixture(prepareEnv);
+
+                await expect(
+                    env.adminManagerContract.connect(env.bob).setExtraGasAmount(0)
+                ).revertedWith("Ownable: caller is not the owner");
+            })
+
+            it("Bad ExtraGasAmount", async () => {
+                const env = await loadFixture(prepareEnv);
+                    
+                await expect(
+                    env.adminManagerContract.setExtraGasAmount(0)
+                ).revertedWith("AdminManager: Zero extra gas amount");
+            })
+        })
+    })
 });
 
 async function prepareEnv() {
