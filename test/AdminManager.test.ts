@@ -124,6 +124,46 @@ describe("Unit tests for the AdminManager contract", () => {
             })
         })
     })
+
+    describe("Pause functionality", () => {
+        it("Pause and then unpause", async () => {
+            const env = await loadFixture(prepareEnv);
+
+            expect(await env.adminManagerContract.paused()).equals(
+                false
+            );
+
+            await env.adminManagerContract.pause();
+             
+            expect(await env.adminManagerContract.paused()).equals(
+                true
+            );
+
+            await env.adminManagerContract.unpause();
+             
+            expect(await env.adminManagerContract.paused()).equals(
+                false
+            );
+        })
+
+        describe("Reverts", () => {
+            it("Onyl owner pause function", async () => {
+                const env = await loadFixture(prepareEnv);
+
+                await expect(
+                    env.adminManagerContract.connect(env.bob).pause()
+                ).revertedWith("Ownable: caller is not the owner");
+            })
+
+            it("Onyl owner unpause function", async () => {
+                const env = await loadFixture(prepareEnv);
+
+                await expect(
+                    env.adminManagerContract.connect(env.bob).unpause()
+                ).revertedWith("Ownable: caller is not the owner");
+            })
+        })
+    })
 });
 
 async function prepareEnv() {
