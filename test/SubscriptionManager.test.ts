@@ -178,7 +178,176 @@ describe("Unit tests for the AdminManager contract", () => {
             })
         })
     })
+
+    describe("changeSubscription function", () => {
+        it("Main functionality", async () => {
+            const env = await loadFixture(prepareEnvWithAppAndSubscription);
+        
+            const newSubscriptionInfo = {
+                name: "newName",
+                amounts: [2],
+                subscriptionPeriod: 3,
+                reciever: env.bob,
+                tokens: [env.alice],
+                isPaused: true
+            };
+
+            await expect(env.subscriptionManagerContract.connect(env.appOwner).changeSubscription(0, 0, newSubscriptionInfo)).emit(
+                env.subscriptionManagerContract, "SubscriptionChanged"
+            );
+            
+            expect(await env.subscriptionManagerContract.subscriptionLength(0)).equals(1);
+            const subscriptionInfoResult = await env.subscriptionManagerContract.subscription(0, 0);
+            expect(subscriptionInfoResult.name).equals(newSubscriptionInfo.name);
+            expect(subscriptionInfoResult.amounts.length).equals(1);
+            expect(subscriptionInfoResult.amounts[0]).equals(newSubscriptionInfo.amounts[0]);
+            expect(subscriptionInfoResult.subscriptionPeriod).equals(newSubscriptionInfo.subscriptionPeriod);
+            expect(subscriptionInfoResult.reciever).equals(newSubscriptionInfo.reciever);
+            expect(subscriptionInfoResult.tokens.length).equals(1);
+            expect(subscriptionInfoResult.tokens[0]).equals(newSubscriptionInfo.tokens[0]);
+            expect(subscriptionInfoResult.isPaused).equals(newSubscriptionInfo.isPaused);
+        })
+
+        describe("Reverts", () => {
+            it("Owner test", async () => {
+                const env = await loadFixture(prepareEnvWithAppAndSubscription);
+
+                await expect(
+                    env.subscriptionManagerContract.connect(env.bob).changeSubscription(0, 0, {
+                        name: "name",
+                        amounts: [1],
+                        subscriptionPeriod: 2,
+                        reciever: env.alice,
+                        tokens: [env.bob],
+                        isPaused: false
+                    })
+                ).revertedWith("SubscriptionManager: caller is not the owner");
+            })
+
+            it("Length test", async () => {
+                const env = await loadFixture(prepareEnvWithAppAndSubscription);
+
+                await expect(
+                    env.subscriptionManagerContract.connect(env.appOwner).changeSubscription(0, 0, {
+                        name: "name",
+                        amounts: [1, 1],
+                        subscriptionPeriod: 2,
+                        reciever: env.alice,
+                        tokens: [env.bob],
+                        isPaused: false
+                    })
+                ).revertedWith("SubscriptionManager: different length");
+
+                await expect(
+                    env.subscriptionManagerContract.connect(env.appOwner).changeSubscription(0, 0, {
+                        name: "name",
+                        amounts: [1],
+                        subscriptionPeriod: 2,
+                        reciever: env.alice,
+                        tokens: [env.bob, env.deployer],
+                        isPaused: false
+                    })
+                ).revertedWith("SubscriptionManager: different length");
+            })
+
+            it("Reciever test", async () => {
+                const env = await loadFixture(prepareEnvWithAppAndSubscription);
+
+                await expect(
+                    env.subscriptionManagerContract.connect(env.appOwner).changeSubscription(0, 0, {
+                        name: "name",
+                        amounts: [1],
+                        subscriptionPeriod: 2,
+                        reciever: ethers.ZeroAddress,
+                        tokens: [env.bob],
+                        isPaused: false
+                    })
+                ).revertedWith("SubscriptionManager: reciever is zero");
+            })
+
+            it("SubscriptionPeriod test", async () => {
+                const env = await loadFixture(prepareEnvWithAppAndSubscription);
+
+                await expect(
+                    env.subscriptionManagerContract.connect(env.appOwner).changeSubscription(0, 0, {
+                        name: "name",
+                        amounts: [1],
+                        subscriptionPeriod: 0,
+                        reciever: env.alice,
+                        tokens: [env.bob],
+                        isPaused: false
+                    })
+                ).revertedWith("SubscriptionManager: subscriptionPeriod is zero");
+            })
+
+            it("Zero token test", async () => {
+                const env = await loadFixture(prepareEnvWithAppAndSubscription);
+
+                await expect(
+                    env.subscriptionManagerContract.connect(env.appOwner).changeSubscription(0, 0, {
+                        name: "name",
+                        amounts: [1],
+                        subscriptionPeriod: 2,
+                        reciever: env.alice,
+                        tokens: [ethers.ZeroAddress],
+                        isPaused: false
+                    })
+                ).revertedWith("SubscriptionManager: token is zero");
+            })
+
+            it("Zero amount test", async () => {
+                const env = await loadFixture(prepareEnvWithAppAndSubscription);
+
+                await expect(
+                    env.subscriptionManagerContract.connect(env.appOwner).changeSubscription(0, 0, {
+                        name: "name",
+                        amounts: [0],
+                        subscriptionPeriod: 2,
+                        reciever: env.alice,
+                        tokens: [env.bob],
+                        isPaused: false
+                    })
+                ).revertedWith("SubscriptionManager: amount is zero");
+            })
+
+            it("Equil tokens test", async () => {
+                const env = await loadFixture(prepareEnvWithAppAndSubscription);
+
+                await expect(
+                    env.subscriptionManagerContract.connect(env.appOwner).changeSubscription(0, 0, {
+                        name: "name",
+                        amounts: [1, 1],
+                        subscriptionPeriod: 2,
+                        reciever: env.alice,
+                        tokens: [env.bob, env.bob],
+                        isPaused: false
+                    })
+                ).revertedWith("SubscriptionManager: equil tokens");
+            })
+        })
+    })
 });
+
+async function prepareEnvWithAppAndSubscription() {
+    const env = await loadFixture(prepareEnvWithApp);
+
+    const subscriptionInfo = {
+        name: "name",
+        amounts: [1],
+        subscriptionPeriod: 2,
+        reciever: env.alice,
+        tokens: [env.bob],
+        isPaused: false
+    };
+
+    await env.subscriptionManagerContract.connect(env.appOwner).addSubscription(0, subscriptionInfo);
+
+    return {
+        ...env,
+
+        subscriptionInfo,
+    };
+}
 
 async function prepareEnvWithApp() {
     const env = await loadFixture(prepareEnv);
