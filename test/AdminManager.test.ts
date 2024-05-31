@@ -147,7 +147,7 @@ describe("Unit tests for the AdminManager contract", () => {
         })
 
         describe("Reverts", () => {
-            it("Onyl owner pause function", async () => {
+            it("Only owner pause function", async () => {
                 const env = await loadFixture(prepareEnv);
 
                 await expect(
@@ -155,7 +155,7 @@ describe("Unit tests for the AdminManager contract", () => {
                 ).revertedWith("Ownable: caller is not the owner");
             })
 
-            it("Onyl owner unpause function", async () => {
+            it("Only owner unpause function", async () => {
                 const env = await loadFixture(prepareEnv);
 
                 await expect(

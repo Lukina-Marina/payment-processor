@@ -326,6 +326,48 @@ describe("Unit tests for the AdminManager contract", () => {
             })
         })
     })
+
+    describe("PauseSubscription and UnpauseSubscription functionality", () => {
+        it("Pause and then unpause", async () => {
+            const env = await loadFixture(prepareEnvWithAppAndSubscription);
+
+            await expect(env.subscriptionManagerContract.connect(env.alice).pauseSubscription(0, 0)).emit(
+                env.subscriptionManagerContract, "SubscriptionPaused"
+            ).withArgs(env.alice, 0, 0);
+
+            const subscriptionInfoAfterPause = await env.subscriptionManagerContract.subscription(0, 0);
+            expect(subscriptionInfoAfterPause.isPaused).equal(
+                true
+            );
+
+            await expect(env.subscriptionManagerContract.connect(env.alice).unpauseSubscription(0, 0)).emit(
+                env.subscriptionManagerContract, "SubscriptionUnpaused"
+            ).withArgs(env.alice, 0, 0);
+
+            const subscriptionInfoAfterUnpause = await env.subscriptionManagerContract.subscription(0, 0);
+            expect(subscriptionInfoAfterUnpause.isPaused).equal(
+                false
+            );
+        })
+
+        describe("Reverts", () => {
+            it("Only owner pause function", async () => {
+                const env = await loadFixture(prepareEnvWithAppAndSubscription);
+
+                await expect(
+                    env.subscriptionManagerContract.connect(env.bob).pauseSubscription(0, 0)
+                ).revertedWith("SubscriptionManager: caller is not the owner");
+            })
+
+            it("Only owner unpause function", async () => {
+                const env = await loadFixture(prepareEnvWithAppAndSubscription);
+
+                await expect(
+                    env.subscriptionManagerContract.connect(env.bob).unpauseSubscription(0, 0)
+                ).revertedWith("SubscriptionManager: caller is not the owner");
+            })
+        })
+    })
 });
 
 async function prepareEnvWithAppAndSubscription() {
