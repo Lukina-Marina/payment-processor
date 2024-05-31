@@ -5,7 +5,7 @@ pragma solidity 0.8.24;
 interface ISubscriptionManager {
     event AppAdded(address indexed owner, uint256 indexed appIndex, string name, string description);
     event SubscriptionAdded(address indexed owner, uint256 indexed appIndex, uint256 indexed subscriptionIndex, Subscription subscription);
-    event SubscriptionChanging(address indexed owner, uint256 indexed appIndex, uint256 indexed subscriptionIndex, Subscription newSubscription);
+    event SubscriptionChanged(address indexed owner, uint256 indexed appIndex, uint256 indexed subscriptionIndex, Subscription newSubscription);
     event SubscriptionPaused(address indexed owner, uint256 indexed appIndex, uint256 indexed subscriptionIndex);
     event SubscriptionUnpaused(address indexed owner, uint256 indexed appIndex, uint256 indexed subscriptionIndex);
 

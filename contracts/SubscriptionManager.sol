@@ -36,7 +36,7 @@ contract SubscriptionManager is ISubscriptionManager {
 
         _apps[appId].subscriptions[subscriptionId] = newSubscription;
 
-        emit SubscriptionChanging(msg.sender, appId, subscriptionId, newSubscription);
+        emit SubscriptionChanged(msg.sender, appId, subscriptionId, newSubscription);
     }
 
     function pauseSubscription(uint256 appId, uint256 subscriptionId) external {
