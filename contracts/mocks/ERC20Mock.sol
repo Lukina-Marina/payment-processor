@@ -8,4 +8,8 @@ contract ERC20Mock is ERC20("Test token", "TEST") {
     function mint(uint256 amount) external {
         _mint(msg.sender, amount);
     }
+
+    function decimals() public view virtual override returns (uint8) {
+        return 12;
+    }
 }
