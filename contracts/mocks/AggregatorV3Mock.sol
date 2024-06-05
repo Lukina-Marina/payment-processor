@@ -4,9 +4,24 @@ pragma solidity 0.8.24;
 
 contract AggregatorV3Mock {
     uint256 answer;
+    uint80 roundId;
+    bool useTimestamp = true;
+    uint256 updatedAt;
 
     function setAnswer(uint256 newAnswer) external {
         answer = newAnswer;
+    }
+
+    function setRoundId(uint80 newAnswer) external {
+        roundId = newAnswer;
+    }
+
+    function setUseTimestamp(bool newAnswer) external {
+        useTimestamp = newAnswer;
+    }
+
+    function setUpdatedAt(uint256 newAnswer) external {
+        updatedAt = newAnswer;
     }
 
     function decimals() external view returns(uint8) {
@@ -16,9 +31,13 @@ contract AggregatorV3Mock {
     function latestRoundData()
     external
     view
-    returns (uint80 roundId, int256 _answer, uint256 startedAt, uint256 updatedAt, uint80 answeredInRound) {
+    returns (uint80 _roundId, int256 _answer, uint256 startedAt, uint256 _updatedAt, uint80 answeredInRound) {
         _answer = int256(answer);
-        updatedAt = block.timestamp;
-        roundId = 1;
+        if (useTimestamp) {
+            _updatedAt = block.timestamp;
+        } else {
+            _updatedAt = updatedAt;
+        }
+        _roundId = roundId;
     }
 }
