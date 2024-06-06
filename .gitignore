@@ -3,3 +3,5 @@ artifacts/
 cache/
 .DS_Store
 typechain-types
+coverage/
+coverage.json
