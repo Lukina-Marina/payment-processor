@@ -77,10 +77,13 @@ contract PriceCalculator is IPriceCalculator {
 
         uint256 oracleAnswer = _getOracleAnswer(tokenConfigMem);
 
-        if (USD_DECIMALS > tokenConfigMem.tokenDecimals + tokenConfigMem.oracleDecimals) {
-            return usdAmount * 10 ** (USD_DECIMALS - tokenConfigMem.oracleDecimals - tokenConfigMem.tokenDecimals) / oracleAnswer;
-        } else {
+        if (USD_DECIMALS < tokenConfigMem.tokenDecimals + tokenConfigMem.oracleDecimals) {
             return usdAmount * 10 ** (tokenConfigMem.oracleDecimals + tokenConfigMem.tokenDecimals - USD_DECIMALS) / oracleAnswer;
+        } else {
+            // usd => token
+            // token = usd / (usd/token price) - without decimals
+            // tokenWithDecimals = usdWithUsdDecimals * 10**(tokenDecimals + oracleDecimals - usdDecimals) / (usd/token price with decimals) - with decimals
+            return usdAmount / (oracleAnswer * 10 ** (USD_DECIMALS - tokenConfigMem.oracleDecimals - tokenConfigMem.tokenDecimals));
         }
     }
 
