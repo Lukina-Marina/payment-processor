@@ -4,19 +4,41 @@ import { ethers } from "hardhat";
 import { expect } from "chai";
 
 describe("Unit tests for the AdminManager contract", () => {
-    it("Deployment tests", async () => {
-        const env = await loadFixture(prepareEnv);
+    describe("Constructor", () => {
+        it("Deployment tests", async () => {
+            const env = await loadFixture(prepareEnv);
+    
+            expect(await env.adminManagerContract.serviceFee()).equals(
+                env.serviceFee
+            );
+            expect(await env.adminManagerContract.feeReceiver()).equals(
+                env.feeReceiver
+            );
+            expect(await env.adminManagerContract.extraGasAmount()).equals(
+                env.extraGasAmount
+            );
+        });
 
-        expect(await env.adminManagerContract.serviceFee()).equals(
-            env.serviceFee
-        );
-        expect(await env.adminManagerContract.feeReceiver()).equals(
-            env.feeReceiver
-        );
-        expect(await env.adminManagerContract.extraGasAmount()).equals(
-            env.extraGasAmount
-        );
-    });
+        describe("Reverts", () => {
+            it("Too big percent", async () => {
+                const env = await loadFixture(prepareEnv);
+
+                await expect(env.adminManagerFactory.deploy(env.PERCENT_DENOMINATOR, ethers.ZeroAddress, 0)).revertedWith("AdminManager: Too big service fee");
+            })
+
+            it("Zero address", async () => {
+                const env = await loadFixture(prepareEnv);
+
+                await expect(env.adminManagerFactory.deploy(env.serviceFee, ethers.ZeroAddress, 0)).revertedWith("AdminManager: Zero fee receiver");
+            })
+
+            it("Zero extra gas amount", async () => {
+                const env = await loadFixture(prepareEnv);
+
+                await expect(env.adminManagerFactory.deploy(env.serviceFee, env.feeReceiver, 0)).revertedWith("AdminManager: Zero extra gas amount");
+            })
+        })
+    })
 
     describe("setServiceFee function", () => {
         it("Main functionality", async () => {
@@ -190,6 +212,7 @@ async function prepareEnv() {
         extraGasAmount,
         PERCENT_DENOMINATOR,
 
+        adminManagerFactory,
         adminManagerContract
     };
 }
