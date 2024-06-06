@@ -119,7 +119,119 @@ describe("Unit tests for the PriceCalculator contract", () => {
             })
         })
     })
+
+    describe("getTokenFromETH function", () => {
+        it("USD_DECIMALS < tokenDecimals + oracleDecimals", async () => {
+            const env = await loadFixture(prepareEnvWithOracles);
+
+            const ethAmount = 2n;
+            const ethAmountWithDecimals = ethAmount * ethers.WeiPerEther;
+
+            const tokenAmountWithDecimals = await env.priceCalculatorContract.getTokenFromETH(env.token, ethAmountWithDecimals);
+            const tokenAmount = tokenAmountWithDecimals / 10n**env.tokenDecimals;
+
+            expect(tokenAmount).equals(
+                ethAmount * env.ethPrice / env.tokenPrice
+            );
+        })
+
+        it("USD_DECIMALS >= tokenDecimals + oracleDecimals", async () => {
+            const env = await loadFixture(prepareEnvWithOracles);
+
+            const newEthOracleDecimals = env.USD_DECIMALS - 18n;
+            const newEthPriceWithDecimals = env.ethPrice * 10n**newEthOracleDecimals;
+            await env.ethUsdOracle.setAnswer(newEthPriceWithDecimals);
+            await env.ethUsdOracle.setDecimals(newEthOracleDecimals);
+            await env.priceCalculatorContract.setTokenConfig(env.NATIVE_TOKEN_ADDRESS, ethers.ZeroAddress, 0);
+            await env.priceCalculatorContract.setTokenConfig(env.NATIVE_TOKEN_ADDRESS, env.ethUsdOracle, env.ethOracleHearbeat);
+
+            const newTokenOracleDecimals = env.USD_DECIMALS - env.tokenDecimals;
+            const newTokenPriceWithDecimals = env.tokenPrice * 10n**newTokenOracleDecimals;
+            await env.tokenUsdOracle.setAnswer(newTokenPriceWithDecimals);
+            await env.tokenUsdOracle.setDecimals(newTokenOracleDecimals);
+            await env.priceCalculatorContract.setTokenConfig(env.token, ethers.ZeroAddress, 0);
+            await env.priceCalculatorContract.setTokenConfig(env.token, env.tokenUsdOracle, env.tokenOracleHearbeat);
+
+            const ethAmount = 2n;
+            const ethAmountWithDecimals = ethAmount * ethers.WeiPerEther;
+
+            const tokenAmountWithDecimals = await env.priceCalculatorContract.getTokenFromETH(env.token, ethAmountWithDecimals);
+            const tokenAmount = tokenAmountWithDecimals / 10n**env.tokenDecimals;
+
+            expect(tokenAmount).equals(
+                ethAmount * env.ethPrice / env.tokenPrice
+            );
+        })
+
+        describe("Reverts", () => {
+            it("Oracle for Native token is not set", async () => {
+                const env = await loadFixture(prepareEnvWithOracles);
+
+                await env.priceCalculatorContract.setTokenConfig(env.NATIVE_TOKEN_ADDRESS, ethers.ZeroAddress, 0);
+
+                await expect(env.priceCalculatorContract.getTokenFromETH(env.token, 0)).revertedWith("PriceCalculator: Not Supported Token");
+            })
+
+            it("Oracle for token is not set", async () => {
+                const env = await loadFixture(prepareEnvWithOracles);
+
+                await env.priceCalculatorContract.setTokenConfig(env.token, ethers.ZeroAddress, 0);
+
+                await expect(env.priceCalculatorContract.getTokenFromETH(env.token, 0)).revertedWith("PriceCalculator: Not Supported Token");
+            })
+        })
+    })
 })
+
+async function prepareEnvWithOracles() {
+    const env = await loadFixture(prepareEnv);
+
+    const aggregatorV3MockFactory = await ethers.getContractFactory("AggregatorV3Mock");
+
+    const tokenDecimals = 8n;
+    const token = env.erc20MockContract;
+    await token.setDecimals(tokenDecimals);
+
+    const ethOracleDeciamls = 15n;
+    const ethPrice = 1000n;
+    const ethPriceWithDecimals = ethPrice * 10n**ethOracleDeciamls;
+    const ethOracleHearbeat = 86400;
+
+    const tokenOracleDecimals = 12n;
+    const tokenPrice = 40n;
+    const tokenPriceWithDecimals = tokenPrice * 10n**tokenOracleDecimals;
+    const tokenOracleHearbeat = 86400;
+
+    const ethUsdOracle = await aggregatorV3MockFactory.deploy();
+    await ethUsdOracle.setDecimals(ethOracleDeciamls);
+    await ethUsdOracle.setAnswer(ethPriceWithDecimals);
+
+    const tokenUsdOracle = await aggregatorV3MockFactory.deploy();
+    await tokenUsdOracle.setDecimals(tokenOracleDecimals);
+    await tokenUsdOracle.setAnswer(tokenPriceWithDecimals);
+
+    await env.priceCalculatorContract.setTokenConfig(env.NATIVE_TOKEN_ADDRESS, ethUsdOracle, ethOracleHearbeat);
+    await env.priceCalculatorContract.setTokenConfig(token, tokenUsdOracle, tokenOracleHearbeat);
+    
+    return {
+        ...env,
+
+        tokenDecimals,
+        token,
+
+        ethOracleDeciamls,
+        ethPrice,
+        ethPriceWithDecimals,
+        ethUsdOracle,
+        ethOracleHearbeat,
+
+        tokenOracleDecimals,
+        tokenPrice,
+        tokenPriceWithDecimals,
+        tokenUsdOracle,
+        tokenOracleHearbeat,
+    };
+}
 
 async function prepareEnv() {
     const signers = await ethers.getSigners();
@@ -127,7 +239,7 @@ async function prepareEnv() {
     const alice = signers[1];
     const bob = signers[2];
 
-    const USD_DECIMALS = 18;
+    const USD_DECIMALS = 18n;
     const NATIVE_TOKEN_ADDRESS = "0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE";
 
     const priceCalculatorFactory = await ethers.getContractFactory("PriceCalculator");
