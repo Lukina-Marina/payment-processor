@@ -9,7 +9,7 @@ contract PriceCalculatorMock {
         price = newValue;
     }
 
-    function getTokenFromETH(address, uint256) external view returns (uint256) {
-        return price;
+    function getTokenFromETH(address, uint256 transactionFeeAmount) external view returns (uint256) {
+        return price * transactionFeeAmount;
     }
 }
