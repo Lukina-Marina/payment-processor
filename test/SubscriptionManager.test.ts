@@ -37,10 +37,10 @@ describe("Unit tests for the AdminManager contract", () => {
         
             const subscriptionInfo = {
                 name: "name",
-                amounts: [1],
+                amounts: [1, 2],
                 subscriptionPeriod: 2,
                 reciever: env.alice,
-                tokens: [env.bob],
+                tokens: [env.bob, env.alice],
                 isPaused: false
             };
 
@@ -51,12 +51,14 @@ describe("Unit tests for the AdminManager contract", () => {
             expect(await env.subscriptionManagerContract.subscriptionLength(0)).equals(1);
             const subscriptionInfoResult = await env.subscriptionManagerContract.subscription(0, 0);
             expect(subscriptionInfoResult.name).equals(subscriptionInfo.name);
-            expect(subscriptionInfoResult.amounts.length).equals(1);
+            expect(subscriptionInfoResult.amounts.length).equals(2);
             expect(subscriptionInfoResult.amounts[0]).equals(subscriptionInfo.amounts[0]);
+            expect(subscriptionInfoResult.amounts[1]).equals(subscriptionInfo.amounts[1]);
             expect(subscriptionInfoResult.subscriptionPeriod).equals(subscriptionInfo.subscriptionPeriod);
             expect(subscriptionInfoResult.reciever).equals(subscriptionInfo.reciever);
-            expect(subscriptionInfoResult.tokens.length).equals(1);
+            expect(subscriptionInfoResult.tokens.length).equals(2);
             expect(subscriptionInfoResult.tokens[0]).equals(subscriptionInfo.tokens[0]);
+            expect(subscriptionInfoResult.tokens[1]).equals(subscriptionInfo.tokens[1]);
             expect(subscriptionInfoResult.isPaused).equals(subscriptionInfo.isPaused);
         })
 
