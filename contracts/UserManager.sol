@@ -10,13 +10,6 @@ import {IAdminManager} from "./interfaces/IAdminManager.sol";
 import {IPriceCalculator} from "./interfaces/IPriceCalculator.sol";
 
 contract UserManager is IUserManager {
-
-    /* struct UserInfo {
-        // поля, которые содержат информацию о пользователе
-        UserSubscriptionInfop[] _activeSubscriptions;
-    }
-    mapping (address => UserInfo) public user; */
-
     mapping (address => ActiveSubscriptionInfo[]) private _activeSubscriptions;
 
     address public subscriptionManager;
@@ -30,32 +23,6 @@ contract UserManager is IUserManager {
         adminManager = _adminManager;
         priceCalculator = _priceCalculator;
     }
-
-    // перменная типа struct ActiveSubscriptionInfo:
-    // ActiveSubscriptionInfo memory activeSubscriptionInfo;
-    // activeSubscriptionInfo.element
-
-    // перменная типа массив структур struct ActiveSubscriptionInfo:
-    // ActiveSubscriptionInfo[] memory activeSubscriptionInfo;
-    // activeSubscriptionInfo[0].element
-
-
-
-    // _activeSubscriptions - маппинг
-    // маппинг это такая структура, которую можно представить таким образом:
-
-    // ----------+-----------+
-    // столбец 1 | столбец 2 |
-    // ----------+-----------+
-    //    key1   |   value1  |
-    // ----------+-----------+
-    //    key2   |   value2  |
-    // ----------+-----------+
-    
-    // в нашем случае это
-    // адрес пользователя 1 - [активная подписка 0 пользователя 0, активная подписка 1 пользователя 0]
-    // адрес пользователя 2 - [активная подписка 0 пользователя 1, активная подписка 1 пользователя 1]
-
     
     function renewSubscription(address user, uint256 activeSubscriptionId) public {
 
@@ -68,7 +35,7 @@ contract UserManager is IUserManager {
         // _activeSubscriptions[user] - ActiveSubscriptionInfo[]
         // _activeSubscriptions[user][activeSubscriptionId] - ActiveSubscriptionInfo
 
-        // чтобы вызвать контракт нужно сделать вот так
+        // чтобы вызвать контракт нужно
         // ISubscriptionManager(переменная, которая содержит адрес контракта).название функции(аргументы функции);
 
         ActiveSubscriptionInfo memory activeSubscriptionInfo = _activeSubscriptions[user][activeSubscriptionId];
@@ -102,8 +69,8 @@ contract UserManager is IUserManager {
         require(subscription.amounts[tokenIndex] > totalFee, "UserManager: Too big fee");
         uint256 transferAmount = subscription.amounts[tokenIndex] - totalFee;
 
-        IERC20(activeSubscriptionInfo.token).transferFrom(msg.sender, subscription.reciever, transferAmount);
-        IERC20(activeSubscriptionInfo.token).transferFrom(msg.sender, feeReceiver, totalFee);
+        IERC20(activeSubscriptionInfo.token).transferFrom(user, subscription.reciever, transferAmount);
+        IERC20(activeSubscriptionInfo.token).transferFrom(user, feeReceiver, totalFee);
 
         uint256 newSubscriptionEndTime = block.timestamp + subscription.subscriptionPeriod;
         _activeSubscriptions[user][activeSubscriptionId].subscriptionEndTime = newSubscriptionEndTime;
@@ -185,6 +152,14 @@ contract UserManager is IUserManager {
         cancelSubscription(activeSubscriptionId);
 
         addSubscription(activeSubscriptionInfo.appId, newSubscriptionId, activeSubscriptionInfo.token);
+    }
+
+    function activeSubscription(address user, uint256 index) external view returns(ActiveSubscriptionInfo memory) {
+        return _activeSubscriptions[user][index];
+    }
+
+    function activeSubscriptionsLength(address user) external view returns(uint256) {
+        return _activeSubscriptions[user].length;
     }
 
     function _checkToken(address[] memory tokens, address token) private pure returns(uint256) {

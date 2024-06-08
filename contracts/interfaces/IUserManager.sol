@@ -35,4 +35,8 @@ interface IUserManager {
     function changePaymentToken(uint256 activeSubscriptionId, address newPaymentToken) external;
     // Смена одной подписки на другую внутри одного приложения
     function changeSubscriptionInApp(uint256 activeSubscriptionId, uint256 newSubscriptionId) external;
+    // Возвращает информацию об активной подписке пользователя
+    function activeSubscription(address user, uint256 index) external view returns(ActiveSubscriptionInfo memory);
+    // Возвращает количество активных подписок пользователя
+    function activeSubscriptionsLength(address user) external view returns(uint256);
 }
